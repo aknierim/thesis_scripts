@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ma_scripts"
+description = "Scripts for my master's thesis."
+readme = "README.rst"
+authors = [
+    { name = "Anno Knierim" }
+]
+license = { text = "MIT" }
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Development Status :: 3 - Alpha",
+]
+
+dynamic = ["version"]
+requires-python = ">=3.10"
+
+dependencies = [
+    "astropy >=6.1.0",
+    "matplotlib ~=3.0",
+    "numpy ~=1.16",
+    "pandas",
+    "pyvisgen",
+    "rich",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "setuptools_scm[toml]",
+]
+
+all = [
+    "ma_scripts[dev]"
+]
+
+[project.urls]
+repository = "https://github.com/aknierim/ma_scripts"
+
+[tool.setuptools_scm]
+write_to = "ma_scripts/_version.py"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = [
+    "I", # isort
+]
+ignore = []
+
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "pyvisgen",
+    "radiotools",
+    "radionets"
+]
