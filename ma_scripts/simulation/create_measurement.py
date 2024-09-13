@@ -55,6 +55,7 @@ class CreateMeasurement:
 
         sky = hdu[0].data[0, 0, ...]
         self.sky = torch.from_numpy(sky.astype(np.float64))
+        self.sky = self.sky[np.newaxis, ...]
 
         self.src_ra = hdr["OBSRA"]
         self.src_dec = hdr["OBSDEC"]
@@ -75,7 +76,7 @@ class CreateMeasurement:
     def plot_sky(self):
         fig, ax = plt.subplots()
 
-        im = ax.imshow(self.sky, origin="lower", norm=SymLogNorm(0.005))
+        im = ax.imshow(self.sky[0, ...], origin="lower", norm=SymLogNorm(0.005))
         fig.colorbar(im, ax=ax)
 
     def visibilities(self, delta, amp_ratio):
@@ -143,8 +144,6 @@ class CreateMeasurement:
             ms.save_as_ms(ms_path)
 
     def create(self):
-        self.sky = self.sky[np.newaxis, ...]
-
         self.vis_list = []
         self.obs_list = []
 
