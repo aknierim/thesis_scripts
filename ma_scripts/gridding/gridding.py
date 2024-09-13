@@ -1,7 +1,9 @@
-import torch
 import numpy as np
+import torch
+from scipy.constants import c
 
-def create_attributes(uu, vv, vis_data, freq, fov, img_size, c=3e8):
+
+def create_attributes(uu, vv, vis_data, freq, fov, img_size):
     """
     Internal method to calculate the mask (UV coverage) and the dirty image
 
@@ -59,11 +61,7 @@ def create_attributes(uu, vv, vis_data, freq, fov, img_size, c=3e8):
     mask_real = mask_real
     mask_imag = mask_imag
     dirty_img = np.abs(
-        np.fft.fftshift(
-            np.fft.ifft2(
-                np.fft.fftshift(mask_real + 1j * mask_imag)
-            )
-        )
+        np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(mask_real + 1j * mask_imag)))
     )
-    
-    return mask, mask_real, mask_imag, dirty_img
+
+    return samps, mask, mask_real, mask_imag, dirty_img
