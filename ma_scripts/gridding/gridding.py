@@ -37,6 +37,8 @@ def create_attributes(uu, vv, vis_data, freq, fov, img_size):
 
     N = img_size
 
+    fov = np.deg2rad(fov * 3600)
+
     delta_l = fov / N
     delta = (N * delta_l) ** (-1)
 
