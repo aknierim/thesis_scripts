@@ -8,6 +8,31 @@ from colour import Color
 from matplotlib.colors import LinearSegmentedColormap
 
 
+def img2jansky(image, header):
+    return (
+        4
+        * image
+        * np.log(2)
+        * np.power(header["CDELT1"], 2)
+        / (np.pi * header["BMIN"] * header["BMAJ"])
+    )
+
+
+def get_header_info(hdr):
+    keys = ["RA", "DEC", "FREQ"]
+
+    values = {}
+    for k, v in hdr.items():
+        if v in keys:
+            values[v] = hdr[f"CRVAL{k[-1]}"]
+
+    values["DATE-OBS"] = hdr["DATE-OBS"]
+    values["TELESCOP"] = hdr["TELESCOP"]
+    values["INSTRUME"] = hdr["INSTRUME"]
+
+    return values
+
+
 def shifted_colormap(cmap, start=0, midpoint=0.5, stop=1.0, name="shiftedcmap"):
     """
     Function to offset the "center" of a colormap. Useful for
@@ -57,7 +82,6 @@ def shifted_colormap(cmap, start=0, midpoint=0.5, stop=1.0, name="shiftedcmap"):
         cdict["alpha"].append((si, a, a))
 
     newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
-    # plt.register_cmap(cmap=newcmap)
 
     return newcmap
 
@@ -128,3 +152,13 @@ def pshape(var):
     callers_local_vars = inspect.currentframe().f_back.f_locals.items()
     var_name = str([k for k, v in callers_local_vars if v is var][0])
     print(f"{var_name}.shape:\t{var.shape}\n")
+
+
+def rmtree(root):
+    for p in root.iterdir():
+        if p.is_dir():
+            rmtree(p)
+        else:
+            p.unlink()
+
+    root.rmdir()
