@@ -42,7 +42,7 @@ class CreateMeasurement:
         torch._logging.set_logs(
             dynamo=logging.CRITICAL, aot=logging.CRITICAL, inductor=logging.CRITICAL
         )
-
+        self.fits_file = fits_file
         self.start = start
         self.end = end
         self.step = step
@@ -143,9 +143,21 @@ class CreateMeasurement:
             ms = Measurement.from_fits(fits_path)
             ms.save_as_ms(ms_path)
 
-    def create(self):
+    def create(self, sim=True):
         self.vis_list = []
         self.obs_list = []
+
+        if not sim:
+            ms_path = (
+                "/scratch/aknierim/MA"
+                + f"/measurement_sets/{Path(self.fits_file).stem}.ms"
+            )
+            print("Simulation set to false. Creating measurement set...")
+            print(self.fits_file)
+            ms = Measurement.from_fits(self.fits_file)
+            ms.save_as_ms(ms_path)
+            
+            return 0
 
         if self.mode == "delta":
             for delta in np.arange(self.start, self.end, self.step):
@@ -155,3 +167,4 @@ class CreateMeasurement:
                 self.visibilities(delta=45, amp_ratio=amp)
 
         return self.vis_list, self.obs_list
+
