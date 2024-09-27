@@ -37,10 +37,17 @@ def plot_baselines(
         Color for antenna positions. Default: #eb6359
     baselines_color : str, optional
         Color for baselines. Default: #111e30
-    fig : matplotlib.figure.figure
+    fig : matplotlib.figure.figure, optional
         Matplotlib figure object. Default: None
-    ax : matplotlib.axis.Axis
+    ax : matplotlib.axis.Axis, optional
         Matplotlib axis object. Default: None
+
+    Returns
+    -------
+    fig : matplotlib.figure.figure
+        Matplotlib figure object.
+    ax : matplotlib.axis.Axis
+        Matplotlib axis object.
     """
     layout = get_array_layout(layout, writer=True)
 
