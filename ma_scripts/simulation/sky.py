@@ -1,16 +1,17 @@
+import numpy as np
 import torch
 import tqdm
-import numpy as np
 from astropy.convolution import Gaussian2DKernel
 from scipy.signal import convolve2d
 
+
 def create_sky(
     size: int,
-    shift: int=10,
-    intensity: float=1.0,
-    random_state: int=42,
-    n_sources: int=10,
-    mode: str="RC",
+    shift: int = 10,
+    intensity: float = 1.0,
+    random_state: int = 42,
+    n_sources: int = 10,
+    mode: str = "RC",
 ) -> torch.tensor:
     """Creates a sky distribution of either point sources
     or extended sources. The latter are point sources
@@ -39,7 +40,7 @@ def create_sky(
     sky : torch.tensor
         (size, size) tensor of the sky distribution.
     """
-    
+
     sky = torch.zeros((size, size))
 
     if "loop" in mode:
@@ -48,7 +49,7 @@ def create_sky(
         x = torch.from_numpy(rng.integers(low=0, high=size, size=n_sources))
         y = torch.from_numpy(rng.integers(low=0, high=size, size=n_sources))
         intensity = torch.from_numpy(rng.random(n_sources))
-        sky[x,y] = intensity
+        sky[x, y] = intensity
 
         x_stddev = torch.from_numpy(rng.uniform(0, 4, size=n_sources))
         y_stddev = torch.from_numpy(rng.uniform(0, 4, size=n_sources))
@@ -57,9 +58,20 @@ def create_sky(
         temp = size / 200
         for i in tqdm(range(n_sources)):
             xi, yi = x[i].item(), y[i].item()
-            kernel = Gaussian2DKernel(x_stddev[i].item(), y_stddev[i].item(), theta[i].item()).array
-            sky[xi - int(temp):xi + int(temp), yi - int(temp):yi + int(temp)] = torch.from_numpy(
-                convolve2d(sky[xi - int(temp):xi + int(temp), yi - int(temp):yi + int(temp)], kernel, mode="same")
+            kernel = Gaussian2DKernel(
+                x_stddev[i].item(), y_stddev[i].item(), theta[i].item()
+            ).array
+            sky[xi - int(temp) : xi + int(temp), yi - int(temp) : yi + int(temp)] = (
+                torch.from_numpy(
+                    convolve2d(
+                        sky[
+                            xi - int(temp) : xi + int(temp),
+                            yi - int(temp) : yi + int(temp),
+                        ],
+                        kernel,
+                        mode="same",
+                    )
+                )
             )
 
     if "R" in mode:
@@ -69,7 +81,8 @@ def create_sky(
         y = torch.from_numpy(rng.integers(low=0, high=size, size=n_sources))
         intensity = torch.from_numpy(rng.random(n_sources))
 
-        sky[x,y] = intensity
+        sky[x, y] = intensity
+
     if "grid" in mode:
         center = int(size / 2)
         sky[center, center] = intensity
@@ -84,9 +97,7 @@ def create_sky(
 
     if "c" in mode:
         kernel = Gaussian2DKernel(4).array
-        sky = torch.from_numpy(
-            convolve2d(sky, kernel, mode="same")
-        )
+        sky = torch.from_numpy(convolve2d(sky, kernel, mode="same"))
 
     if "C" in mode:
         rng = np.random.default_rng(random_state)
@@ -96,7 +107,5 @@ def create_sky(
         theta = rng.uniform(0, 180)
 
         kernel = Gaussian2DKernel(x_stddev, y_stddev, theta).array
-        sky = torch.from_numpy(
-            convolve2d(sky, kernel, mode="same")
-        )
+        sky = torch.from_numpy(convolve2d(sky, kernel, mode="same"))
     return sky
