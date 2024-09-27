@@ -9,21 +9,11 @@ from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 from tqdm import tqdm
 
-from ma_scripts.utils import Layout
+from ma_scripts.utils import Layout, rmtree
 from pyvisgen.fits import writer
 from pyvisgen.simulation.observation import Observation
 from pyvisgen.simulation.visibility import vis_loop
 from radiotools.measurements import Measurement
-
-
-def _rmtree(root):
-    for p in root.iterdir():
-        if p.is_dir():
-            _rmtree(p)
-        else:
-            p.unlink()
-
-    root.rmdir()
 
 
 class CreateMeasurement:
@@ -34,10 +24,41 @@ class CreateMeasurement:
         end: int,
         step: int,
         mode: str = "delta",
-        polarisation: str = "circular",
-        fov_correction=None,
-        batch_size=100,
-    ):
+        polarisation: str | None = "circular",
+        fov_correction: float | None = None,
+        batch_size: int = 100,
+        device: str = "cuda",
+    ) -> None:
+        """Creates a measurement simulation using pyvisgen and saves
+        it to a measurement set.
+
+        Parameters
+        ----------
+        fits : str
+            Path to an input FITS file.
+        start : int
+            Start value for delta or the amplitudes. This will create
+            simulations in a loop with step size 'step' until 'end'
+            is reached.
+        end : int
+            End value for delta or the amplitudes.
+        step : int
+            Step size for delta/amplitudes loop.
+        mode : str, optional
+            Wether to vary phase delay delta or the amplitudes.
+            Available values are 'delta', and 'amp'. Default: 'delta'
+        polarisation : str or None, optional
+            Type of polarisation to simulate. Available values are
+            'circular', 'linear', or None. If None is passed,
+            no polarisation is applied. Default: 'circular'.
+        fov_correction : float or None, optional
+            Optional correction factor, e.g. 1.3 for the fov.
+            If None is passed, nothing happens. Default: None
+        batch_size : int,  optional
+            Number of batches for the simulation. Default: 100
+        device : str, optional
+            Device to run the simulation on. Default: 'cuda'
+        """
         torch._dynamo.config.suppress_errors = True
         torch._logging.set_logs(
             dynamo=logging.CRITICAL, aot=logging.CRITICAL, inductor=logging.CRITICAL
@@ -73,13 +94,26 @@ class CreateMeasurement:
         if fov_correction:
             self.fov *= fov_correction
 
+        self.device = device
+
     def plot_sky(self):
+        """Plots the sky image extracted from the FITS file."""
         fig, ax = plt.subplots()
 
         im = ax.imshow(self.sky[0, ...], origin="lower", norm=SymLogNorm(0.005))
         fig.colorbar(im, ax=ax)
 
-    def visibilities(self, delta, amp_ratio):
+    def _visibilities(self, delta: float, amp_ratio: float):
+        """Computes the visibilities using the pyvisgen Observation class
+        and the vis_loop function.
+
+        Parameters
+        ----------
+        delta : float
+            Value for phase angle delta.
+        amp_ratio : float
+            Amplitude ratio.
+        """
         obs = Observation(
             src_ra=self.src_ra,
             src_dec=self.src_dec,
@@ -95,7 +129,7 @@ class CreateMeasurement:
             image_size=self.sky.shape[-1],
             array_layout=self.layout_name,
             corrupted=False,
-            device="cuda:0",
+            device=self.device,
             dense=False,
             sensitivity_cut=1e-6,
             polarisation=self.polarisation,
@@ -118,14 +152,13 @@ class CreateMeasurement:
         self.vis_list.append(vis)
         self.obs_list.append(obs)
 
-        BASE = "/scratch/aknierim/MA"
-
         for s in tqdm(["I", "Q", "U", "V"]):
             fits_path = (
-                BASE + f"/fits/{self.polarisation}.{s}.{self.mode}_d_{delta}.fits"
+                self.BASE_PATH
+                + f"/fits/{self.polarisation}.{s}.{self.mode}_d_{delta}.fits"
             )
             ms_path = (
-                BASE
+                self.BASE_PATH
                 + f"/measurement_sets/{self.polarisation}.{s}.{self.mode}_d_{delta}.ms"
             )
 
@@ -134,7 +167,7 @@ class CreateMeasurement:
                 print(f"Removing {fits_path}...")
 
             if Path(ms_path).is_dir():
-                _rmtree(Path(ms_path))
+                rmtree(Path(ms_path))
                 print(f"Removing {ms_path}...")
 
             hdu_list = writer.create_hdu_list(vis, obs)
@@ -143,28 +176,52 @@ class CreateMeasurement:
             ms = Measurement.from_fits(fits_path)
             ms.save_as_ms(ms_path)
 
-    def create(self, sim=True):
+    def create(self, base_path: str, sim: bool = True) -> tuple[list, list]:
+        """Creates the measurement set.
+
+        Parameters
+        ----------
+        base_path : str
+            Base directory where subdirectories for data
+            are located. The structure is the following:
+
+                base_path/
+                 |
+                 |- measurement_sets/
+                 |- fits/
+
+        sim : bool, optional
+            If set to False, no simulation is applied and
+            the measurement set is created directly from
+            the FITS file. Default: True
+
+        Returns
+        -------
+        vis_list : list
+            List of visibility dataclass objects.
+        obs_list : list
+            List of observation dataclass objects.
+        """
         self.vis_list = []
         self.obs_list = []
+        self.BASE_PATH = base_path
 
         if not sim:
             ms_path = (
-                "/scratch/aknierim/MA"
-                + f"/measurement_sets/{Path(self.fits_file).stem}.ms"
+                self.BASE_PATH + f"/measurement_sets/{Path(self.fits_file).stem}.ms"
             )
             print("Simulation set to false. Creating measurement set...")
             print(self.fits_file)
             ms = Measurement.from_fits(self.fits_file)
             ms.save_as_ms(ms_path)
-            
+
             return 0
 
         if self.mode == "delta":
             for delta in np.arange(self.start, self.end, self.step):
-                self.visibilities(delta=delta, amp_ratio=0.5)
+                self._visibilities(delta=delta, amp_ratio=0.5)
         elif self.mode == "amp":
             for amp in np.arange(self.start, self.end, self.step):
-                self.visibilities(delta=45, amp_ratio=amp)
+                self._visibilities(delta=45, amp_ratio=amp)
 
         return self.vis_list, self.obs_list
-

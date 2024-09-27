@@ -154,7 +154,15 @@ def pshape(var):
     print(f"{var_name}.shape:\t{var.shape}\n")
 
 
-def rmtree(root):
+def rmtree(root: Path):
+    """Recursively remove directories and files
+    starting from a root directory.
+
+    Parameters
+    ----------
+    root : Path
+        Root path of the directories you want to delete.
+    """
     for p in root.iterdir():
         if p.is_dir():
             rmtree(p)

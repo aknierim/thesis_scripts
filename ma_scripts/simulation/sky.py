@@ -5,13 +5,41 @@ from astropy.convolution import Gaussian2DKernel
 from scipy.signal import convolve2d
 
 def create_sky(
-    size,
-    shift=10,
-    intensity=1.0,
-    random_state=42,
-    n_sources=10,
-    mode="RC",
+    size: int,
+    shift: int=10,
+    intensity: float=1.0,
+    random_state: int=42,
+    n_sources: int=10,
+    mode: str="RC",
 ) -> torch.tensor:
+    """Creates a sky distribution of either point sources
+    or extended sources. The latter are point sources
+    smeared with a gaussian kernel.
+
+    Parameters
+    ----------
+    size : int
+        Image size of the (size, size) image.
+    shift : int, optional
+        Only applied if mode is set to 'grid'.
+        Default: 10
+    intensity : float, optional
+        Maximum intensity of the sources. Default: 1.0
+    random_state : int, optional
+        Seed of the random number generator. Default: 42
+    n_sources : int, optional
+        Number of sources. Default: 10
+    mode : str, optional
+        Choose between different modes of smearing
+        point sources. Leave empty for point sources
+        only. Default: 'RC'
+
+    Returns
+    -------
+    sky : torch.tensor
+        (size, size) tensor of the sky distribution.
+    """
+    
     sky = torch.zeros((size, size))
 
     if "loop" in mode:

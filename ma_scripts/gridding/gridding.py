@@ -1,3 +1,5 @@
+"""Taken and slightly adapted from our radiotools package."""
+
 import numpy as np
 import torch
 from scipy.constants import c
@@ -5,19 +7,16 @@ from scipy.constants import c
 
 def create_attributes(uu, vv, vis_data, freq, fov, img_size):
     """
-    Internal method to calculate the mask (UV coverage) and the dirty image
+    Calculates the mask (UV coverage) and the dirty image.
 
     Parameters
     ----------
     uu: array_like
-    The U baseline coordinates in units of wavelength
-
+        The U baseline coordinates in units of wavelength
     vv: array_like
-    The U baseline coordinates in units of wavelength
-
+        The U baseline coordinates in units of wavelength
     stokes_i: array_like
-    The Stokes I parameters of the measurement
-
+        The Stokes I parameters of the measurement
     """
 
     u = uu * freq / c

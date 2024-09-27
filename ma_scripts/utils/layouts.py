@@ -1,3 +1,5 @@
+"""Taken and adapted from our radiotools package."""
+
 import uuid
 from pathlib import Path
 
@@ -12,7 +14,6 @@ pd.options.display.float_format = "{:f}".format
 class Layout:
     """
     A tool to convert radio telescope array layout config files between different types.
-
     """
 
     def __init__(self):
@@ -515,6 +516,11 @@ class Layout:
         cls.altitude = df.iloc[:, 8].to_list()
 
         return cls
+
+    @classmethod
+    def from_url(cls, url):
+        
+        
 
 
 def loc2itrf(cx, cy, cz, locx=0.0, locy=0.0, locz=0.0):
