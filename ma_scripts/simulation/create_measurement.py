@@ -9,11 +9,16 @@ from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 from tqdm import tqdm
 
-from ma_scripts.utils import Layout, rmtree
+from ma_scripts.utils import rmtree
 from pyvisgen.fits import writer
 from pyvisgen.simulation.observation import Observation
 from pyvisgen.simulation.visibility import vis_loop
+from radiotools.layouts import Layout
 from radiotools.measurements import Measurement
+
+GITHUB = "https://raw.githubusercontent.com/"
+PROJECT = "radionets-project/"
+REPO = "pyvisgen/refs/heads/main/pyvisgen/layouts/"
 
 
 class CreateMeasurement:
@@ -63,6 +68,7 @@ class CreateMeasurement:
         torch._logging.set_logs(
             dynamo=logging.CRITICAL, aot=logging.CRITICAL, inductor=logging.CRITICAL
         )
+
         self.fits_file = fits_file
         self.start = start
         self.end = end
@@ -84,8 +90,8 @@ class CreateMeasurement:
         self.obs_freq = hdr["CRVAL3"]
 
         self.layout_name = hdu[0].header["TELESCOP"].lower()
-        self.layout = Layout.from_pyvisgen(
-            f"~/MA/pyvisgen/pyvisgen/layouts/{self.layout_name}.txt"
+        self.layout = Layout.from_url(
+            GITHUB + PROJECT + REPO + f"{self.layout_name}.txt"
         )
 
         res = self.layout.get_max_resolution(self.obs_freq)
