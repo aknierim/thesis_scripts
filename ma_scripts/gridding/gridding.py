@@ -5,18 +5,44 @@ import torch
 from scipy.constants import c
 
 
-def create_attributes(uu, vv, vis_data, freq, fov, img_size):
+def create_attributes(
+    uu: torch.tensor,
+    vv: torch.tensor,
+    vis_data: "Visibilities",
+    freq: float,
+    fov: float,
+    img_size: int,
+) -> tuple:
     """
     Calculates the mask (UV coverage) and the dirty image.
 
     Parameters
     ----------
-    uu: array_like
+    uu : array_like
         The U baseline coordinates in units of wavelength
-    vv: array_like
+    vv : array_like
         The U baseline coordinates in units of wavelength
-    stokes_i: array_like
-        The Stokes I parameters of the measurement
+    vis_data : pyvisgen.simulation.visibility.Visibilities
+        pyvisgen visibility dataclass object.
+    freq : float
+        Frequency of the observation.
+    fov : float
+        Field of view.
+    img_size : int
+        Image size.
+
+    Returns
+    -------
+    samps : torch.tensor
+        Tensor of samples.
+    mask : torch.tensor
+        Tensor of the grid mask.
+    mask_real : torch.tensor
+        Tensor of the real part of the grid mask.
+    mask_imag : torch.tensor
+        Tensor of the imaginary part of the grid mask.
+    dirty_img : torch.tensor
+        Tensor of the dirty image.
     """
 
     u = uu * freq / c
