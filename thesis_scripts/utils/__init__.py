@@ -1,12 +1,10 @@
+from .colors import custom_cmap, shifted_colormap, test_cmap
 from .utils import (
-    custom_cmap,
     get_header_info,
     img2jansky,
     pshape,
     pvar,
     rmtree,
-    shifted_colormap,
-    test_cmap,
 )
 
 __all__ = [
