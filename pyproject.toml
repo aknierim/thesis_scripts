@@ -29,11 +29,12 @@ dynamic = ["version"]
 requires-python = ">=3.10"
 
 dependencies = [
-    "astropy >=6.1.0",
-    "matplotlib ~=3.0",
-    "numpy ~=1.16",
+    "astropy>=6.1.0",
+    "matplotlib~=3.0",
+    "numpy~=1.16",
     "pandas",
-    "pyvisgen",
+    "pyvisgen@git+https://github.com/radionets-project/pyvisgen",
+    "radiotools@git+https://github.com/radionets-project/radiotools",
     "rich",
 ]
 
@@ -57,7 +58,7 @@ write_to = "ma_scripts/_version.py"
 where = ["."]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py310"
 line-length = 88
 
 [tool.ruff.lint]
