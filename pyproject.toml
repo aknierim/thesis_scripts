@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ma_scripts"
+name = "thesis_scripts"
 description = "Scripts for my master's thesis."
 readme = "README.rst"
 authors = [
@@ -45,14 +45,14 @@ dev = [
 ]
 
 all = [
-    "ma_scripts[dev]"
+    "thesis_scripts[dev]"
 ]
 
 [project.urls]
-repository = "https://github.com/aknierim/ma_scripts"
+repository = "https://github.com/aknierim/thesis_scripts"
 
 [tool.setuptools_scm]
-write_to = "ma_scripts/_version.py"
+write_to = "thesis_scripts/_version.py"
 
 [tool.setuptools.packages.find]
 where = ["."]

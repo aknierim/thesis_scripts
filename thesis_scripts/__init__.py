@@ -1,5 +1,5 @@
 """
-ma_scripts - A collection of tools for my master's thesis.
+thesis_scripts - A collection of tools for my master's thesis.
 
 Licensed under a MIT style license - see LICENSE
 """

@@ -9,8 +9,8 @@ except Exception:
     import warnings
 
     warnings.warn(
-        "Could not determine ma_scripts version. This indicates"
-        " a broken installation. Please install ma_scripts from"
+        "Could not determine thesis_scripts version. This indicates"
+        " a broken installation. Please install thesis_scripts from"
         " the local git repository."
     )
     del warnings

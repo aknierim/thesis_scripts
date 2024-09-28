@@ -9,12 +9,12 @@ from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 from tqdm import tqdm
 
-from ma_scripts.utils import rmtree
 from pyvisgen.fits import writer
 from pyvisgen.simulation.observation import Observation
 from pyvisgen.simulation.visibility import vis_loop
 from radiotools.layouts import Layout
 from radiotools.measurements import Measurement
+from thesis_scripts.utils import rmtree
 
 GITHUB = "https://raw.githubusercontent.com/"
 PROJECT = "radionets-project/"
