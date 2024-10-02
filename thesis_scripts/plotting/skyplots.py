@@ -253,9 +253,7 @@ class Skyplot:
                 warnings.warn(str(e))
                 continue
 
-        im_true = axs["True Sky"].imshow(
-            self.true_sky, origin="lower", cmap="inferno", norm=SymLogNorm(0.005)
-        )
+        im_true = axs["True Sky"].imshow(self.true_sky, **_imshow_kwargs)
         axs["True Sky"].contour(
             self.true_sky,
             levels=np.geomspace(self.true_sky.max() / 6e2, self.true_sky.max(), 10),
