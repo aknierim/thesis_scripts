@@ -1,8 +1,13 @@
 """Taken and slightly adapted from our radiotools package."""
 
+from pathlib import Path
+
 import numpy as np
 import torch
+from numpy.typing import ArrayLike
 from scipy.constants import c
+
+from thesis_scripts.io import FitsReader
 
 
 def create_attributes(
@@ -92,3 +97,97 @@ def create_attributes(
     )
 
     return samps, mask, mask_real, mask_imag, dirty_img
+
+
+class Gridder:
+    @classmethod
+    def from_params(
+        cls,
+        uu: ArrayLike,
+        vv: ArrayLike,
+        freq_bands: ArrayLike,
+        visibilities: ArrayLike,
+        img_size: int,
+        fov: float,
+    ) -> tuple:
+        cls = cls()
+        return cls.gridder()
+
+    @classmethod
+    def from_fits(cls, file_path: str | Path, img_size: int, fov: float) -> tuple:
+        cls = cls()
+
+        reader = FitsReader(file_path)
+        data = reader.get_uv_data()
+        _, freq_bands = reader.get_freq_data()
+
+        try:
+            u = data["UU"]
+        except KeyError:
+            u = data["UU--"]
+        try:
+            v = data["VV"]
+        except KeyError:
+            v = data["VV--"]
+
+        vis = data["DATA"]
+
+        return cls.gridder(u, v, freq_bands, vis, img_size, fov)
+
+    def gridder(
+        cls,
+        uu: ArrayLike,
+        vv: ArrayLike,
+        freq_bands: ArrayLike,
+        visibilities: ArrayLike,
+        img_size: int,
+        fov: float,
+    ) -> tuple:
+        u = np.array([uu * np.array(freq) for freq in freq_bands]).ravel()
+        v = np.array([vv * np.array(freq) for freq in freq_bands]).ravel()
+
+        stokes_I = (
+            np.squeeze((visibilities[..., 0, 0] + 1j * visibilities[..., 0, 1]))
+            .swapaxes(0, 1)
+            .ravel()
+        )
+
+        samps = np.array(
+            [
+                np.concatenate([-u, u]),
+                np.concatenate([-v, v]),
+                np.concatenate([stokes_I.real, stokes_I.real]),
+                np.concatenate([stokes_I.imag, -stokes_I.imag]),
+            ]
+        )
+
+        fov = np.deg2rad(fov / 3600)
+        delta_l = fov / img_size
+        delta = (img_size * delta_l) ** (-1)
+
+        bins = (
+            np.arange(
+                start=-(img_size / 2) * delta,
+                stop=((img_size + 1) / 2) * delta,
+                step=delta,
+            )
+            - delta / 2
+        )
+
+        mask, *_ = np.histogram2d(samps[0], samps[1], bins=[bins, bins], density=False)
+        mask[mask == 0] = 1
+
+        mask_real, *_ = np.histogram2d(
+            samps[0], samps[1], bins=[bins, bins], weights=samps[2], density=False
+        )
+        mask_imag, *_ = np.histogram2d(
+            samps[0], samps[1], bins=[bins, bins], weights=samps[3], density=False
+        )
+
+        mask_real /= mask
+        mask_imag /= mask
+        dirty_image = np.abs(
+            np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(mask_real + 1j * mask_imag)))
+        )
+
+        return mask_real, mask_imag, dirty_image
