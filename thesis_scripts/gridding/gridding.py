@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from numpy.typing import ArrayLike
+from numpy import AxisError
 from scipy.constants import c
 
 from thesis_scripts.io import FitsReader
@@ -146,11 +147,17 @@ class Gridder:
         u = np.array([uu * np.array(freq) for freq in freq_bands]).ravel()
         v = np.array([vv * np.array(freq) for freq in freq_bands]).ravel()
 
-        stokes_I = (
-            np.squeeze((visibilities[..., 0, 0] + 1j * visibilities[..., 0, 1]))
-            .swapaxes(0, 1)
-            .ravel()
-        )
+        try:
+            stokes_I = (
+                np.squeeze((visibilities[..., 0, 0] + 1j * visibilities[..., 0, 1]))
+                .swapaxes(0, 1)
+                .ravel()
+            )
+        except AxisError:
+            stokes_I = (
+                np.squeeze((visibilities[..., 0, 0] + 1j * visibilities[..., 0, 1]))
+                .ravel()
+            )
 
         samps = np.array(
             [
