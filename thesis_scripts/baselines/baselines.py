@@ -71,6 +71,7 @@ def plot_baselines(
         ls="none",
         zorder=3,
         transform=ccrs.Geodetic(),
+        label="Projected antenna positions"
     )
 
     for i in range(len(stations.lon)):

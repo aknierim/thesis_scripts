@@ -123,8 +123,8 @@ class Skyplot:
 
         RR = self.images["I"] + self.images["V"]
         LL = self.images["I"] - self.images["V"]
-        LR = self.images["Q"] + 1j * self.images["U"]
-        RL = self.images["Q"] - 1j * self.images["U"]
+        RL = self.images["Q"] + 1j * self.images["U"]
+        LR = self.images["Q"] - 1j * self.images["U"]
 
         self.visibilities = [RR, RL, LR, LL]
 
@@ -286,7 +286,7 @@ class Skyplot:
         return fig, axs
 
     def rrll(
-        self, imshow_kwargs: dict = {}, cont_kwargs: dict = {}
+        self, imshow_kwargs: dict = {}, cont_kwargs: dict = {}, figsize=(11, 8)
     ) -> tuple[Figure, Axes]:
         """Plots RR, LL, RL, LL image data initialized
         in Skyplot.__init__().
@@ -318,7 +318,7 @@ class Skyplot:
             _cont_kwargs = cont_kwargs
 
         fig, axs = plt.subplot_mosaic(
-            [["RR", "RL"], ["LR", "LL"]], layout="constrained", figsize=(11, 8)
+            [["RR", "RL"], ["LR", "LL"]], layout="constrained", figsize=figsize
         )
 
         for ax, vis in zip(axs.values(), self.visibilities):

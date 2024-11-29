@@ -31,14 +31,8 @@ requires-python = ">=3.10"
 dependencies = [
     "astropy>=6.1.0",
     "matplotlib~=3.0",
-    "numpy~=1.16",
+    "numpy ~=1.26",
     "pandas >=2.0",
-    "pyvisgen@git+https://github.com/radionets-project/pyvisgen",
-    "radiotools@git+https://github.com/radionets-project/radiotools",
-    "rich",
-    "casatools",
-    "colorspacious",
-    "colour",
 ]
 
 [project.optional-dependencies]
