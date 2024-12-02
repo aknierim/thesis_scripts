@@ -195,7 +195,7 @@ class Skyplot:
         return fig, axs
 
     def iquv(
-        self, imshow_kwargs: dict = {}, cont_kwargs: dict = {}
+        self, imshow_kwargs: dict = {}, cont_kwargs: dict = {}, contours: bool = True,
     ) -> tuple[Figure, Axes]:
         """Plots IQUV image data initialized in Skyplot.__init__().
 
@@ -241,17 +241,15 @@ class Skyplot:
                 self.images[comp], self.hdus[comp], ax=axs[comp], true_img=self.true_sky
             )
 
-            try:
-                axs[comp].contour(
+            if contours:
+                self._contours(
                     self.images[comp],
-                    levels=np.geomspace(
-                        self.images[comp].max() / 1e2, self.images[comp].max(), 5
-                    ),
+                    ax=axs[comp],
+                    lower=self.images[comp].max() / 1e2,
+                    upper=self.images[comp].max(),
+                    num_lines=5,
                     **_cont_kwargs,
                 )
-            except Exception as e:
-                warnings.warn(str(e))
-                continue
 
         im_true = axs["True Sky"].imshow(self.true_sky, **_imshow_kwargs)
         axs["True Sky"].contour(
@@ -286,7 +284,7 @@ class Skyplot:
         return fig, axs
 
     def rrll(
-        self, imshow_kwargs: dict = {}, cont_kwargs: dict = {}
+        self, imshow_kwargs: dict = {}, cont_kwargs: dict = {}, contours: bool = True
     ) -> tuple[Figure, Axes]:
         """Plots RR, LL, RL, LL image data initialized
         in Skyplot.__init__().
@@ -326,15 +324,15 @@ class Skyplot:
 
             ax.set(**self.lims)
 
-            try:
-                ax.contour(
+            if contours:
+                self._contours(
                     vis.real,
-                    levels=np.geomspace(vis.max() / 1e2, vis.max(), 10),
-                    **_cont_kwargs,
+                    ax=ax,
+                    lower=vis.max() / 1e2,
+                    upper=vis.max(),
+                    num_lines=10,
+                    **_cont_kwargs
                 )
-            except ValueError as e:
-                warnings.warn(str(e))
-                continue
 
             fig.colorbar(
                 im,
@@ -354,3 +352,16 @@ class Skyplot:
             )
 
         return fig, axs
+
+
+    def _contours(self, img, ax, *, lower=0, upper=1, num_lines=10, **kwargs) -> None:
+        try:
+            ax.contour(
+                img,
+                levels=np.geomspace(
+                    lower, upper, num_lines
+                ),
+                **kwargs,
+            )
+        except Exception as e:
+                warnings.warn(str(e))
