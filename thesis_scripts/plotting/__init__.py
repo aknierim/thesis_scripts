@@ -1,3 +1,3 @@
-from .skyplots import Skyplot, show_beam
+from .skyplots import BaselinePlotter, Skyplot, show_beam
 
-__all__ = ["Skyplot", "show_beam"]
+__all__ = ["BaselinePlotter", "Skyplot", "show_beam"]
